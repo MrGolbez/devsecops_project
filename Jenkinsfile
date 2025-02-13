@@ -16,7 +16,7 @@ pipeline {
         stage('Build') {
             steps {
                 // Compile all Python files to check for syntax errors.
-                sh 'python3 -m compile src/'
+                sh 'python3 -m compileall src/'
             }
             post {
                 success { echo 'Build Success!' }
@@ -32,7 +32,7 @@ pipeline {
             python3 -m venv venv
             . venv/bin/activate
             pip install -r requirements.txt
-            export PYTHON=${WORKSPACE}
+            export PYTHONPATH=${WORKSPACE}
             pytest tests/test_math_utils.py --max-fail=1 --disable-warnings -q --cov=src --cov-report=xml
             '''
             }
@@ -54,7 +54,7 @@ pipeline {
                             -Dsonar.language=py \
                             -Dsonar.python.coverage.reportPaths=coverage.xml \
                             -Dsonar.login=${SONARQUBE_TOKEN}
-                    '''
+                        '''
                 }
             }
             post {
