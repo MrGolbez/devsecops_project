@@ -26,12 +26,17 @@ pipeline {
 
         stage('Test and Code Coverage') {
             steps {
-                // Run tests using pytest and generate a coverage report.
-                sh '''
-                    cd ${WORKSPACE}
-                    export PYTHONPATH=${WORKSPACE}
-                   pytest tests/test_math_utils.py --maxfail=1 --disable-warnings -q --cov=src --cov-report=xml
-                   '''
+        sh '''
+            cd ${WORKSPACE}
+            # Create a virtual environment named "venv"
+            python3 -m venv venv
+            . venv/bin/activate
+            # Install project dependencies, including pytest and pytest-cov
+            pip install -r requirements.txt
+            # Set PYTHONPATH to the workspace so that the src module can be found
+            export PYTHONPATH=${WORKSPACE}
+            pytest tests/test_math_utils.py --maxfail=1 --disable-warnings -q --cov=src --cov-report=xml
+        '''
             }
             post {
                 success { echo 'Tests passed and coverage report generated.' }
