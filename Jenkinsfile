@@ -35,7 +35,7 @@ pipeline {
                     . venv/bin/activate
                     pip install -r requirements.txt
                     export PYTHONPATH=${WORKSPACE}
-                    pytest tests/test_math_utils.py --max-fail=1 --disable-warnings -q --cov=src --cov-report=xml
+                    pytest tests/test_math_utils.py --maxfail=1 --disable-warnings -q --cov=src --cov-report=xml
                 '''
             }
             post {
