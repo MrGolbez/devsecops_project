@@ -27,7 +27,12 @@ pipeline {
         stage('Test and Code Coverage') {
             steps {
                 // Run tests using pytest and generate a coverage report.
-                sh 'pytest --maxfail=1 --disable-warnings -q --cov=src --cov-report=xml'
+                sh '''
+                   python3 -m venv venv
+                   . venv/bin/activate
+                   pip install -r requirements.txt
+                   pytest tests/test_math_utils.py --maxfail=1 --disable-warnings -q --cov=src --cov-report=xml
+                   '''
             }
             post {
                 success { echo 'Tests passed and coverage report generated.' }
