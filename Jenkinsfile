@@ -56,8 +56,7 @@ pipeline {
                             -Dsonar.language=py \
                             -Dsonar.python.coverage.reportPaths=coverage.xml \
                             -Dsonar.token=${SONARQUBE_TOKEN}
-                    ''',
-                    shell: '/bin/bash'
+                    '''
                 }
             }
             post {
