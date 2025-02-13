@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         // SonarQube token from Jenkins credentials.
-        SONARQUBE_TOKEN = credentials('sonarqube_scan')
+        SONARQUBE_TOKEN = credentials('devsecops_pipeline')
     }
 
     stages {
@@ -46,10 +46,11 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                // Use withSonarQubeEnv to set environment variables for SonarQube.
-                withSonarQubeEnv('My_SonarQube_Server') {
+                // Use withSonarQubeEnv to inject SonarQube environment variables
+                withSonarQubeEnv('My SonarQube Server') {
+                    // Use the 'tool' step to get the sonar-scanner installation directory.
                     sh '''
-                        sonar-scanner \
+                        ${tool 'sonar_scanner'}/bin/sonar_scanner \
                             -Dsonar.projectKey=devsecops_project \
                             -Dsonar.sources=. \
                             -Dsonar.language=py \
