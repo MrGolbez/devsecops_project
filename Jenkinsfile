@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        // SonarQube token from Jenkins credentials.
+        // SonarQube token retrieved from Jenkins credentials (ensure the credential ID is correct).
         SONARQUBE_TOKEN = credentials('sonarqube_scan')
     }
 
@@ -17,7 +17,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Starting Build Stage'
-                // Compile all Python files to check for syntax errors.
+                // Compile all Python files in src/ to catch syntax errors.
                 sh 'python3 -m compileall src/'
             }
             post {
@@ -44,37 +44,39 @@ pipeline {
             }
         }
 
-        stage('Print Scanner Path') {
-            steps {
-                echo "SonarQube Scanner path: ${tool 'sonar_scanner'}"
-            }
-        }
-
         stage('SonarQube Analysis') {
             steps {
                 echo 'Starting SonarQube Analysis Stage'
-                withSonarQubeEnv('My SonarQube Server') {
-                    sh '''
-                        #!/bin/bash
-                        echo "Using sonar-scanner from: ${tool 'sonar_scanner'}"
-                        ${tool 'sonar_scanner'}/bin/sonar-scanner \
-                            -Dsonar.projectKey=devsecops_project \
-                            -Dsonar.sources=. \
-                            -Dsonar.language=py \
-                            -Dsonar.python.coverage.reportPaths=coverage.xml \
-                            -Dsonar.login=${SONARQUBE_TOKEN}
-                    '''
+                script {
+                    // Evaluate the SonarQube Scanner tool path.
+                    def scannerPath = tool 'sonar_scanner'
+                    echo "Using sonar-scanner from: ${scannerPath}"
+                    withSonarQubeEnv('My SonarQube Server') {
+                        sh(
+                            script: """
+                                #!/bin/bash
+                                ${scannerPath}/bin/sonar-scanner \\
+                                    -Dsonar.projectKey=devsecops_project \\
+                                    -Dsonar.sources=. \\
+                                    -Dsonar.language=py \\
+                                    -Dsonar.python.coverage.reportPaths=coverage.xml \\
+                                    -Dsonar.login=${SONARQUBE_TOKEN}
+                            """,
+                            shell: '/bin/bash'
+                        )
+                    }
+                }
+            }
+            post {
+                success { echo 'SonarQube analysis completed successfully.' }
+                failure { echo 'SonarQube analysis failed.' }
+            }
         }
-    }
-    post {
-        success { echo 'SonarQube analysis completed successfully.' }
-        failure { echo 'SonarQube analysis failed.' }
-    }
-}
 
         stage('Artifact Generation') {
             steps {
                 echo 'Starting Artifact Generation Stage'
+                // Build the Python package (assumes a valid setup.py exists)
                 sh 'python3 setup.py sdist bdist_wheel'
                 archiveArtifacts artifacts: 'dist/*', fingerprint: true
             }
