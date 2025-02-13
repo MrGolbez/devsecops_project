@@ -49,6 +49,7 @@ pipeline {
                 echo 'Starting SonarQube Analysis Stage'
                 withSonarQubeEnv('My SonarQube Server') {
                     sh '''
+                        !#bin/bash
                         ${tool 'sonar_scanner'}/bin/sonar-scanner \
                             -Dsonar.projectKey=devsecops_project \
                             -Dsonar.sources=. \
