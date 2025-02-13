@@ -52,8 +52,9 @@ pipeline {
                         ${tool 'sonar_scanner'}/bin/sonar-scanner \
                             -Dsonar.projectKey=devsecops_project \
                             -Dsonar.sources=. \
-                            -Dsonar.host.url=http://localhost:9000 \
-                            -Dsonar.token=sqp_a82a9a4c594e6a2af6ddf6eccf261e45db469b61
+                            -Dsonar.language=py \
+                            -Dsonar.python.coverage.reportPaths=coverage.xml \
+                            -Dsonar.token=${SONARQUBE_TOKEN}
                     '''
                 }
             }
