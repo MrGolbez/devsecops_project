@@ -9,12 +9,14 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
+                echo 'Starting Checkout Stage'
                 git branch: 'main', url: 'https://github.com/MrGolbez/devsecops_project.git'
             }
         }
 
         stage('Build') {
             steps {
+                echo 'Starting Build Stage'
                 // Compile all Python files to check for syntax errors.
                 sh 'python3 -m compileall src/'
             }
@@ -26,15 +28,15 @@ pipeline {
 
         stage('Test and Code Coverage') {
             steps {
-        sh '''
-            cd ${WORKSPACE}
-            # Create a virtual environment named "venv"
-            python3 -m venv venv
-            . venv/bin/activate
-            pip install -r requirements.txt
-            export PYTHONPATH=${WORKSPACE}
-            pytest tests/test_math_utils.py --max-fail=1 --disable-warnings -q --cov=src --cov-report=xml
-            '''
+                echo 'Starting Test and Code Coverage Stage'
+                sh '''
+                    cd ${WORKSPACE}
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    pip install -r requirements.txt
+                    export PYTHONPATH=${WORKSPACE}
+                    pytest tests/test_math_utils.py --max-fail=1 --disable-warnings -q --cov=src --cov-report=xml
+                '''
             }
             post {
                 success { echo 'Tests passed and coverage report generated.' }
@@ -44,17 +46,16 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                // Use withSonarQubeEnv to inject SonarQube environment variables
+                echo 'Starting SonarQube Analysis Stage'
                 withSonarQubeEnv('My SonarQube Server') {
-                    // Use the 'tool' step to get the sonar-scanner installation directory.
                     sh '''
-                        ${tool 'sonar_scanner'}/bin/sonar_scanner \
+                        ${tool 'sonar_scanner'}/bin/sonar-scanner \
                             -Dsonar.projectKey=devsecops_project \
                             -Dsonar.sources=. \
                             -Dsonar.language=py \
                             -Dsonar.python.coverage.reportPaths=coverage.xml \
                             -Dsonar.login=${SONARQUBE_TOKEN}
-                        '''
+                    '''
                 }
             }
             post {
@@ -65,9 +66,8 @@ pipeline {
 
         stage('Artifact Generation') {
             steps {
-                // Build a Python package; ensure a valid setup.py exists.
+                echo 'Starting Artifact Generation Stage'
                 sh 'python3 setup.py sdist bdist_wheel'
-                // Archive the artifacts from the dist folder.
                 archiveArtifacts artifacts: 'dist/*', fingerprint: true
             }
             post {
@@ -78,7 +78,7 @@ pipeline {
 
         stage('Send Slack Notification') {
             steps {
-                // Send Slack notification using the Slack plugin.
+                echo 'Starting Slack Notification Stage'
                 slackSend channel: '#pipeline_updates',
                           message: "Build ${currentBuild.currentResult}: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                           tokenCredentialId: 'slack_token'
