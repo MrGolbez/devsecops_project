@@ -49,14 +49,15 @@ pipeline {
                 echo 'Starting SonarQube Analysis Stage'
                 withSonarQubeEnv('My SonarQube Server') {
                     sh '''
-                        !#bin/bash
+                        #!/bin/bash
                         ${tool 'sonar_scanner'}/bin/sonar-scanner \
                             -Dsonar.projectKey=devsecops_project \
                             -Dsonar.sources=. \
                             -Dsonar.language=py \
                             -Dsonar.python.coverage.reportPaths=coverage.xml \
                             -Dsonar.token=${SONARQUBE_TOKEN}
-                    '''
+                    ''',
+                    shell: '/bin/bash'
                 }
             }
             post {
