@@ -44,26 +44,33 @@ pipeline {
             }
         }
 
+        stage('Print Scanner Path') {
+            steps {
+                echo "SonarQube Scanner path: ${tool 'sonar_scanner'}"
+            }
+        }
+
         stage('SonarQube Analysis') {
             steps {
                 echo 'Starting SonarQube Analysis Stage'
                 withSonarQubeEnv('My SonarQube Server') {
                     sh '''
                         #!/bin/bash
+                        echo "Using sonar-scanner from: ${tool 'sonar_scanner'}"
                         ${tool 'sonar_scanner'}/bin/sonar-scanner \
                             -Dsonar.projectKey=devsecops_project \
                             -Dsonar.sources=. \
                             -Dsonar.language=py \
                             -Dsonar.python.coverage.reportPaths=coverage.xml \
-                            -Dsonar.token=${SONARQUBE_TOKEN}
+                            -Dsonar.login=${SONARQUBE_TOKEN}
                     '''
-                }
-            }
-            post {
-                success { echo 'SonarQube analysis completed successfully.' }
-                failure { echo 'SonarQube analysis failed.' }
-            }
         }
+    }
+    post {
+        success { echo 'SonarQube analysis completed successfully.' }
+        failure { echo 'SonarQube analysis failed.' }
+    }
+}
 
         stage('Artifact Generation') {
             steps {
