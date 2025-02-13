@@ -28,9 +28,8 @@ pipeline {
             steps {
                 // Run tests using pytest and generate a coverage report.
                 sh '''
-                   python3 -m venv venv
-                   .venv/bin/activate
-                   pip install -r requirements.txt
+                    cd ${WORKSPACE}
+                    export PYTHONPATH=${WORKSPACE}
                    pytest tests/test_math_utils.py --maxfail=1 --disable-warnings -q --cov=src --cov-report=xml
                    '''
             }
